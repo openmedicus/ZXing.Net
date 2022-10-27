@@ -30,7 +30,7 @@ namespace ZXing
         private BitMatrix matrix;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="binarizer"></param>
         public BinaryBitmap(Binarizer binarizer)
@@ -87,6 +87,11 @@ namespace ZXing
         public BitArray getBlackRow(int y, BitArray row)
         {
             return binarizer.getBlackRow(y, row);
+        }
+
+        public BitArray getBlackRowAtAngle (int x, int y, double degrees, BitArray row)
+        {
+            return binarizer.getBlackRowAtAngle (x, y, degrees, row);
         }
 
         /// <summary>

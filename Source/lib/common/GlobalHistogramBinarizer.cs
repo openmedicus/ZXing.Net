@@ -20,9 +20,9 @@ namespace ZXing.Common
     /// for low-end mobile devices which don't have enough CPU or memory to use a local thresholding
     /// algorithm. However, because it picks a global black point, it cannot handle difficult shadows
     /// and gradients.
-    /// 
+    ///
     /// Faster mobile devices and all desktop applications should probably use HybridBinarizer instead.
-    /// 
+    ///
     /// <author>dswitkin@google.com (Daniel Switkin)</author>
     /// <author>Sean Owen</author>
     /// </summary>
@@ -47,6 +47,64 @@ namespace ZXing.Common
             buckets = new int[LUMINANCE_BUCKETS];
         }
 
+
+        public override BitArray getBlackRowAtAngle (int centerx, int centery, double degrees, BitArray row)
+        {
+            LuminanceSource source = LuminanceSource;
+            int width = source.Width;
+            if (row == null || row.Size < width)
+            {
+                row = new BitArray(width);
+            }
+            else
+            {
+                row.clear();
+            }
+
+            initArrays(width);
+            byte[] localLuminances = source.getRowAtAngle(centerx, centery, degrees, luminances);
+
+            int[] localBuckets = buckets;
+            for (int x = 0; x < width; x++)
+            {
+                localBuckets[(localLuminances[x] & 0xff) >> LUMINANCE_SHIFT]++;
+            }
+            int blackPoint;
+            if (!estimateBlackPoint(localBuckets, out blackPoint))
+                return null;
+
+            if (width < 3)
+            {
+                // Special case for very small images
+                for (int x = 0; x < width; x++)
+                {
+                    if ((localLuminances[x] & 0xff) < blackPoint)
+                    {
+                        row[x] = true;
+                    }
+                }
+            }
+            else
+            {
+                int left = localLuminances[0] & 0xff;
+                int center = localLuminances[1] & 0xff;
+                for (int x = 1; x < width - 1; x++)
+                {
+                    int right = localLuminances[x + 1] & 0xff;
+                    // A simple -1 4 -1 box filter with a weight of 2.
+                    // ((center << 2) - left - right) >> 1
+                    if (((center * 4) - left - right) / 2 < blackPoint)
+                    {
+                        row[x] = true;
+                    }
+                    left = center;
+                    center = right;
+                }
+            }
+
+            return row;
+        }
+
         /// <summary>
         /// Applies simple sharpening to the row data to improve performance of the 1D Readers.
         /// </summary>
@@ -68,6 +126,7 @@ namespace ZXing.Common
 
             initArrays(width);
             byte[] localLuminances = source.getRow(y, luminances);
+
             int[] localBuckets = buckets;
             for (int x = 0; x < width; x++)
             {

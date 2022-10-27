@@ -57,6 +57,11 @@ namespace ZXing
         /// <returns> An array containing the luminance data.</returns>
         public abstract byte[] getRow(int y, byte[] row);
 
+        public virtual byte[] getRowAtAngle(int x, int y, double a, byte[] row)
+        {
+            return null;
+        }
+
         /// <summary>
         /// Fetches luminance data for the underlying bitmap. Values should be fetched using:
         /// <code>int luminance = array[y * width + x] &amp; 0xff</code>
@@ -103,7 +108,7 @@ namespace ZXing
             }
         }
 
-        /// <summary> 
+        /// <summary>
         /// Returns a new object with cropped image data. Implementations may keep a reference to the
         /// original data rather than a copy. Only callable if CropSupported is true.
         /// </summary>
@@ -167,7 +172,7 @@ namespace ZXing
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override String ToString()

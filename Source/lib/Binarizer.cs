@@ -24,7 +24,7 @@ namespace ZXing
     /// It allows the algorithm to vary polymorphically, for example allowing a very expensive
     /// thresholding technique for servers and a fast one for mobile. It also permits the implementation
     /// to vary, e.g. a JNI version for Android and a Java fallback version for other platforms.
-    /// 
+    ///
     /// <author>dswitkin@google.com (Daniel Switkin)</author>
     /// </summary>
     public abstract class Binarizer
@@ -68,6 +68,11 @@ namespace ZXing
         /// </param>
         /// <returns> The array of bits for this row (true means black).</returns>
         public abstract BitArray getBlackRow(int y, BitArray row);
+
+        public virtual BitArray getBlackRowAtAngle (int x, int y, double degrees, BitArray row)
+        {
+            return null;
+        }
 
         /// <summary> Converts a 2D array of luminance data to 1 bit data. As above, assume this method is expensive
         /// and do not call it repeatedly. This method is intended for decoding 2D barcodes and may or

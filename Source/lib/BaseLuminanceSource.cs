@@ -19,7 +19,7 @@ using System;
 namespace ZXing
 {
     /// <summary>
-    /// The base class for luminance sources which supports 
+    /// The base class for luminance sources which supports
     /// cropping and rotating based upon the luminance values.
     /// </summary>
     public abstract class BaseLuminanceSource : LuminanceSource
@@ -45,7 +45,7 @@ namespace ZXing
         protected const int ChannelWeight = 16;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected byte[] luminances;
 
@@ -94,6 +94,26 @@ namespace ZXing
             }
             for (int i = 0; i < width; i++)
                 row[i] = luminances[y * width + i];
+            return row;
+        }
+
+        public override byte[] getRowAtAngle (int centerx, int centery, double degrees, byte[] row)
+        {
+            if (row == null || row.Length < Width)
+                row = new byte[Width];
+
+            double a = Math.Tan ((Math.PI/180) * degrees);
+            int yIntersect = Convert.ToInt32 (a * (-(centerx)) + (centery));
+
+            int yIndex(int x) => Convert.ToInt32 (a * x + yIntersect);
+            int to1Dindex(int x, int ry) => ry * Width + x;
+
+            for (int i = 0; i < Width; i++)
+            {
+                int index = to1Dindex(i, yIndex(i));
+                row[i] = index < 0 || index > luminances.Length ? byte.MaxValue : luminances [index];
+            }
+
             return row;
         }
 

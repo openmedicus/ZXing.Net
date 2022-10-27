@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ZXing.Common;
 
 namespace ZXing.OneD
@@ -29,11 +30,11 @@ namespace ZXing.OneD
     public abstract class OneDReader : Reader
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected static int INTEGER_MATH_SHIFT = 8;
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected static int PATTERN_MATCH_RESULT_SCALE_FACTOR = 1 << INTEGER_MATH_SHIFT;
 
@@ -142,7 +143,6 @@ namespace ZXing.OneD
             int middle = height >> 1;
             for (int x = 0; x < maxLines; x++)
             {
-
                 // Scanning from the middle out. Determine which row we're looking at next:
                 int rowStepsAboveOrBelow = (x + 1) >> 1;
                 bool isAbove = (x & 0x01) == 0; // i.e. is x even?
@@ -200,6 +200,65 @@ namespace ZXing.OneD
                         }
                     }
                     return result;
+                }
+            }
+
+            var angles = Enumerable.Range (1, 40).Select(x => (double) x).ToList();
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+
+            double w = width;
+            double h = height;
+            var centers = new (double X, double Y, string Name) []
+            {
+                (w / 2, h / 2, "Center"),
+                (w / 3, h / 2, "Right of Center"),
+                (w / 4, h / 2, "More right of Center"),
+                (w / 2 + w / 3, h / 2, "Left of Center"), //right of center
+                (w / 2 + w / 4, h / 2, "More left of Center"), //righter of center
+                (w / 2, h / 2 + h / 8, "Above Center"),
+                (w / 2, h / 2 + h / 4, "More above Center"),
+                (w / 2, h / 2 - h / 8, "Below Center"),
+                (w / 2, h / 2 - h / 4, "More below Center")
+            };
+            foreach (var center in  centers)
+            {
+                foreach (var angle in angles.Union(angles.Select(x => x*-1)))
+                {
+                    // Estimate black point for this row and load it:
+                    row = image.getBlackRowAtAngle ((int)center.Item1, (int)center.Item2, angle, row);
+                    if (row == null)
+                        continue;
+
+                    // While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
+                    // handle decoding upside down barcodes.
+                    for (int attempt = 0; attempt < 2; attempt++)
+                    {
+                        if (attempt == 1)
+                        {
+                            row.reverse();
+                        }
+                        // Look for a barcode
+                        Result result = decodeRow (0, row, hints);
+                        if (result == null)
+                            continue;
+
+                        // We found our barcode
+                        if (attempt == 1)
+                        {
+                            // But it was upside down, so note that
+                            result.putMetadata(ResultMetadataType.ORIENTATION, 180);
+                            // And remember to flip the result points horizontally.
+                            ResultPoint[] points = result.ResultPoints;
+                            if (points != null)
+                            {
+                                points[0] = new ResultPoint(width - points[0].X - 1, points[0].Y);
+                                points[1] = new ResultPoint(width - points[1].X - 1, points[1].Y);
+                            }
+                        }
+                        sw.Stop();
+                        Console.WriteLine($"Barcode found at {angle} degree angle and {center.Name} ({(int)center.X},{(int)center.Y}), took {sw.ElapsedMilliseconds} ms. ({sw.ElapsedTicks} ticks)");
+                        return result;
+                    }
                 }
             }
 

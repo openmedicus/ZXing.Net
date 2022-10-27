@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <VersionPrefix>0.16.4</VersionPrefix>
-    <TargetFrameworks>netstandard1.0;netstandard1.1;netstandard1.3;netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
     <PlatformTarget>anycpu</PlatformTarget>
-    <PublicSign>true</PublicSign>
+    <PublicSign>false</PublicSign>
     <DebugType>portable</DebugType>
     <AssemblyName>zxing</AssemblyName>
     <AssemblyOriginatorKeyFile>../../../Key/private.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PackageId>ZXing.Net</PackageId>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -20,6 +18,7 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
 	<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+	<TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
