@@ -256,7 +256,9 @@ namespace ZXing.OneD
                             }
                         }
                         sw.Stop();
+                        #if DEBUG
                         Console.WriteLine($"Barcode found at {angle} degree angle and {center.Name} ({(int)center.X},{(int)center.Y}), took {sw.ElapsedMilliseconds} ms. ({sw.ElapsedTicks} ticks)");
+                        #endif
                         return result;
                     }
                 }
